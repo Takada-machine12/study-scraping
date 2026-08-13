@@ -1,6 +1,11 @@
 # 仮想環境
 .venv/
+
 # 自動生成されるキャッシュファイル
 __pycache__/
+
 # 拡張子が .pycのファイル
-*.pycstudy-scraping-51a818170b85.json
+*.pyc
+
+# Google認証情報
+study-scraping-51a818170b85.json
