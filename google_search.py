@@ -1,5 +1,7 @@
 # ブラウザを自動操作するためseleniumをimport
 from selenium import webdriver
+# Google Chromeのドライバーを管理・起動するためにimport
+from selenium.webdriver.chrome.service import Service as ChromeService
 # seleniumでヘッドレスモードを指定するためにimport
 from selenium.webdriver.chrome.options import Options
 # seleniumでEnterキーを送信する際に使用するのでimport
@@ -22,13 +24,13 @@ URL = "https://google.com"
 # グーグルのURLタイトルの確認のため
 URL_TITLE = "Google"
 # 2つのAPIを記述しないとリフレッシュトークンを3600秒毎に発行し続けなければならない
-
+scope = ["https://spreadsheets.google.com/feeds", "https://googleapis.com/auth/drive"]
 # 認証情報設定
 # ダウンロードしたjsonファイル名をクレデンシャル変数に設定（秘密鍵、Pythonファイルから読み込みしやすい位置に置く）
-
+credentials = ServiceAccountCredentials.from_json_keyfile_name("study-scraping-51a818170b85.json")
 
 # 共有設定したスプレッドシートキーを格納
-
+SPREADSHEET_KEY = "1X8QRlR4V33YGKELRXrQy5yIwUFY-sf-nSIhzzCvjKOU"
 
 '''
 メインの処理
@@ -37,45 +39,51 @@ Googleでキーワードを検索
 '''
 
 # 検索キーワードが入力されたテキストファイルを読み込む
-
+with open("keyword.txt") as f:
+    keywords = [s.rstrip() for s in f.readlines()]
 
 # Options()オブジェクトの生成
-
+options = Options()
+# Blink(ロボット判定)の機能を無効化
+options.add_argument("--disable-blink-features=AutomationControlled")
 # options.add_argument('--headless') # ヘッドレスモードを有効にする
-
+options.add_argument('--headless')
 # ChromeのWebDriverオブジェクトを作成
-
+service = ChromeService()
+driver = webdriver.Chrome(service=service, options=options)
 # executable need to be in pathというエラーが出た場合
-# chromedriverをpythonファイルと同じフォルダに置き、記述を下記のように変更
-# driver = webdriver.Chrome(options=options, executable_path="chromedriverのpathを書く")
 
 # Googleのトップページを開く
-
+driver.get(URL)
 # 2秒待機
-
-
+time.sleep(2)
 # Google検索処理
-
+for keyword in keywords:
+    print(f"検索キーワード：{keyword}")
+    search(driver, keyword)
 # 情報取得処理
 
 # Googleスプレッドシート出力処理
 
-
 # ブラウザーを閉じる
+driver.quit()
 
-'''
-検索テキストボックスに検索キーワードを入力し、検索する
-'''
+def search(driver, keyword):
+    '''
+    検索テキストボックスに検索キーワードを入力し、検索する
+    '''
 
-# 検索テキストボックスの要素をname属性から取得
+    # 検索テキストボックスの要素をname属性から取得
+    input_element = driver.find_element(By.NAME,"q")
+    # 検索テキストボックスに入力されている文字列を消去
+    input_element.clear()
+    # 検索テキストボックスにキーワードを入力
+    input_element.send_keys(keyword)
+    # Enterキーを送信
+    input_element.send_keys(Keys.RETURN)
+    # 2秒待機
+    time.sleep(2)
 
-# 検索テキストボックスに入力されている文字列を消去
-
-# 検索テキストボックスにキーワードを入力
-
-# Enterキーを送信
-
-# 2秒待機
 
 '''
 タイトル、URL、説明文、H1からH5までの情報を取得
