@@ -6,6 +6,8 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 # seleniumでEnterキーを送信する際に使用するのでimport
 from selenium.webdriver.common.keys import Keys
+# seleniumでブラウザの検索テキストボックスの属性を取得するためにimport
+from selenium.webdriver.common.by import By
 # HTTPリクエストを送る為にrequestsをimport
 import requests
 # HTMLから必要な情報を得る為にBeautifulSoupをimport
@@ -90,13 +92,37 @@ def search(driver, keyword):
 '''
 
 # 辞書を使って複数のアイテムを整理 -> 引数が減る＋返り値が減る
+items = {
+    "keyword":keyword,
+    "title":["タイトル"],
+    "url":[],
+    "description":["説明文"],
+    "h1":[],
+    "h2":[],
+    "h3":[],
+    "h4":[],
+    "h5":[]
+}
+# seleniumによる検索結果のurlの取得(リスト形式で値が入ってくる)
+urls = driver.find_elements(By.CSS_SELECTOR, "div > div > div > div.kb0PBd.A9Y9g.jGGQ5e > div > div > span > a")
 
-# seleniumによる検索結果のurlの取得
-
+# まずurlsの中身が存在するかチェック
+if urls:
+    # 存在すれば、urlsから中身を取り出す
+    for url in urls:
+        items["url"].append(url.get_attribute("href").strip())
 # seleniumによるtitleの取得
+titles = driver.find_elements(By.CSS_SELECTOR, "#_7VeJaqj2E4ugosUP7Kv1yQk_")
 
+if titles:
+    for title in titles:
+        items["title"].append(title.text.strip())
 # seleniumによるdescription（説明文）の取得
+descriptions = driver.find_elements(By.CSS_SELECTOR, "div.kb0PBd.A9Y9g > div.VwiC3b.yXK7lf.p4wth.r025kc.Hdw6tb > span")
 
+if descriptions:
+    for description in descriptions:
+        items["description"].append(description.text.strip())
 # h1?h5見出しの取得
 
 # URLにGETリクエストを送る
